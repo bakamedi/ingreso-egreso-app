@@ -5,10 +5,9 @@ import { IngresoEgresoService } from './ingreso-egreso.service';
 import { ToastService } from '../toast.service';
 import { Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 import { Store } from '@ngrx/store';
-import { AppState } from '../app.reducer';
 import { Subscription } from 'rxjs';
 import { ActivarLoadingAction, DesactivarLoadingAction } from '../shared/ui.action';
-
+import * as fromIngresoEgreso from './ingreso-egreso.reducers';
 
 @Component({
   selector: 'app-ingreso-egreso',
@@ -25,7 +24,7 @@ export class IngresoEgresoComponent implements OnInit, OnDestroy {
   constructor(private spinnerService: Ng4LoadingSpinnerService,
               public ingresoEgresoService: IngresoEgresoService,
               private snfyService: ToastService,
-              private store: Store<AppState>) { }
+              private store: Store<fromIngresoEgreso.AppState>) { }
 
   ngOnInit() {
     this.loadingSubs = this.store.select('ui').subscribe( ui => {

@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AppState } from '../../app.reducer';
 import { Store } from '@ngrx/store';
 import { IngresoEgreso } from '../ingreso-egreso.model';
 import { Subscription } from 'rxjs';
 import { IngresoEgresoService } from '../ingreso-egreso.service';
 import { ToastService } from '../../toast.service';
+import * as fromIngresoEgreso from '../ingreso-egreso.reducers';
 
 @Component({
   selector: 'app-detalle',
@@ -13,7 +13,7 @@ import { ToastService } from '../../toast.service';
 })
 export class DetalleComponent implements OnInit,OnDestroy {
 
-  constructor(private store: Store<AppState>,
+  constructor(private store: Store<fromIngresoEgreso.AppState>,
               private ingresoEgresoService: IngresoEgresoService,
               private toastService: ToastService) { }
 
