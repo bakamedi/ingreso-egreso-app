@@ -10,7 +10,7 @@ import { User } from './user.model';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.reducer';
 import { ActivarLoadingAction, DesactivarLoadingAction } from '../shared/ui.action';
-import { SetUserAction } from './auth.actions';
+import { SetUserAction, UnSetUserAction } from './auth.actions';
 import { Subscription } from 'rxjs';
 
 @Injectable({
@@ -19,6 +19,7 @@ import { Subscription } from 'rxjs';
 export class AuthService {
 
   private userSubscription: Subscription = new Subscription();
+  private usuario: User;
 
   constructor(private spinnerService: Ng4LoadingSpinnerService,
               private afAuth: AngularFireAuth,
@@ -33,8 +34,10 @@ export class AuthService {
           .subscribe( (userObj: any) => {
             const newUser = new User(userObj);
             this.store.dispatch(new SetUserAction(newUser));
+            this.usuario = newUser;
           });
       } else {
+        this.usuario = null;
         this.userSubscription.unsubscribe();
       }
     });
@@ -77,6 +80,7 @@ export class AuthService {
     .catch( error => {
       console.log(error);
       this.store.dispatch(new DesactivarLoadingAction());
+      this.store.dispatch(new UnSetUserAction());
       this.spinnerService.hide();
       Swal('Error en el login', error.message, 'error');
     });
@@ -87,6 +91,7 @@ export class AuthService {
       .then( () => {
         this.store.dispatch(new DesactivarLoadingAction());
         this.router.navigate(['/login']);
+        this.store.dispatch( new UnSetUserAction);
       }).catch( error => {
         this.store.dispatch(new DesactivarLoadingAction());
         Swal('Error al cerrar sesion', error.message, 'error');
@@ -102,6 +107,10 @@ export class AuthService {
         return fbUser != null;
       })
     );
+  }
+
+  getUser() {
+    return {...this.usuario};
   }
 
 }

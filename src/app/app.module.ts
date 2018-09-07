@@ -1,7 +1,10 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
-// spinner
+// Toast
+import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
+
+// Loading Spinner
 import { Ng4LoadingSpinnerModule } from 'ng4-loading-spinner';
 
 // ngrx
@@ -14,8 +17,11 @@ import { AngularFireModule } from 'angularfire2';
 import { AngularFirestoreModule } from 'angularfire2/firestore';
 import { AngularFireAuthModule } from 'angularfire2/auth';
 
+// Chart.js
+import { ChartsModule } from 'ng2-charts';
+
 // Forms
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // Routing Modules
 import { AppRoutingModules } from './app-routing.module';
@@ -34,6 +40,7 @@ import { SidebarComponent } from './shared/sidebar/sidebar.component';
 
 // Enviroment
 import { environment } from '../environments/environment';
+import { OrdenIngresoEgresoPipe } from './ingreso-egreso/orden-ingreso-egreso.pipe';
 
 
 
@@ -48,12 +55,14 @@ import { environment } from '../environments/environment';
     DetalleComponent,
     FooterComponent,
     NavbarComponent,
-    SidebarComponent
+    SidebarComponent,
+    OrdenIngresoEgresoPipe
   ],
   imports: [
     BrowserModule,
     AppRoutingModules,
     FormsModule,
+    ReactiveFormsModule,
     AngularFireModule,
     AngularFirestoreModule,
     AngularFireAuthModule,
@@ -63,9 +72,14 @@ import { environment } from '../environments/environment';
       maxAge: 25, // Retains last 25 states
       logOnly: environment.production, // Restrict extension to log-only mode
     }),
-    Ng4LoadingSpinnerModule.forRoot()
+    Ng4LoadingSpinnerModule.forRoot(),
+    SnotifyModule,
+    ChartsModule
   ],
-  providers: [],
+  providers: [{ 
+    provide: 'SnotifyToastConfig', useValue: ToastDefaults},
+    SnotifyService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
