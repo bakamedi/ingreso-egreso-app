@@ -7,6 +7,9 @@ import * as firebase from 'firebase';
 import { map } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { User } from './user.model';
+import { Store } from '@ngrx/store';
+import { AppState } from '../app.reducer';
+import { ActivarLoadingAction, DesactivarLoadingAction } from '../shared/ui.action';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +18,8 @@ export class AuthService {
 
   constructor(private afAuth: AngularFireAuth,
               private router: Router,
-              private afDB: AngularFirestore) { }
+              private afDB: AngularFirestore,
+              private store: Store<AppState>) { }
 
   initAuthListener() {
     this.afAuth.authState.subscribe( (fbUser: firebase.User) => {
@@ -24,6 +28,7 @@ export class AuthService {
   }
 
   crearUsuario ( nombre: string, email: string, password: string ) {
+    this.store.dispatch( new ActivarLoadingAction());
     this.afAuth.auth.createUserWithEmailAndPassword( email, password )
     .then( response => {
       console.log(response);
@@ -34,9 +39,11 @@ export class AuthService {
       };
       this.afDB.doc(`${ user.uid }/usuario`).set( user ).then( () => {
         this.router.navigate(['/']);
+        this.store.dispatch(new DesactivarLoadingAction());
       });
     }).catch( error => {
       console.log(error);
+      this.store.dispatch(new DesactivarLoadingAction());
       Swal('Error al crear Usuario', error.message, 'error');
     });
   }
