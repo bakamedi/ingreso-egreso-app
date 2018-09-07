@@ -18,7 +18,7 @@ export function uiReducer(state = initState, action: fromUI.actionsLoading): Sta
       };
     case fromUI.DESACTIVAR_LOADING:
       return {
-        isLoading: true
+        isLoading: false
       };
     default:
       return state;

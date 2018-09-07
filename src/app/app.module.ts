@@ -1,6 +1,9 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
+// spinner
+import { Ng4LoadingSpinnerModule } from 'ng4-loading-spinner';
+
 // ngrx
 import { StoreModule } from '@ngrx/store';
 import { appReducers } from './app.reducer';
@@ -60,6 +63,7 @@ import { environment } from '../environments/environment';
       maxAge: 25, // Retains last 25 states
       logOnly: environment.production, // Restrict extension to log-only mode
     }),
+    Ng4LoadingSpinnerModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

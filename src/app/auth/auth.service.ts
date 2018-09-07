@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { AngularFirestore } from 'angularfire2/firestore';
 import { Router } from '@angular/router';
-
+import { Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
 import * as firebase from 'firebase';
 import { map } from 'rxjs/operators';
 import Swal from 'sweetalert2';
@@ -10,24 +10,38 @@ import { User } from './user.model';
 import { Store } from '@ngrx/store';
 import { AppState } from '../app.reducer';
 import { ActivarLoadingAction, DesactivarLoadingAction } from '../shared/ui.action';
+import { SetUserAction } from './auth.actions';
+import { Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  constructor(private afAuth: AngularFireAuth,
+  private userSubscription: Subscription = new Subscription();
+
+  constructor(private spinnerService: Ng4LoadingSpinnerService,
+              private afAuth: AngularFireAuth,
               private router: Router,
               private afDB: AngularFirestore,
               private store: Store<AppState>) { }
 
   initAuthListener() {
     this.afAuth.authState.subscribe( (fbUser: firebase.User) => {
-      console.log(fbUser);
+      if (fbUser) {
+        this.userSubscription = this.afDB.doc(`${fbUser.uid}/usuario`).valueChanges()
+          .subscribe( (userObj: any) => {
+            const newUser = new User(userObj);
+            this.store.dispatch(new SetUserAction(newUser));
+          });
+      } else {
+        this.userSubscription.unsubscribe();
+      }
     });
   }
 
   crearUsuario ( nombre: string, email: string, password: string ) {
+    this.spinnerService.show();
     this.store.dispatch( new ActivarLoadingAction());
     this.afAuth.auth.createUserWithEmailAndPassword( email, password )
     .then( response => {
@@ -40,22 +54,30 @@ export class AuthService {
       this.afDB.doc(`${ user.uid }/usuario`).set( user ).then( () => {
         this.router.navigate(['/']);
         this.store.dispatch(new DesactivarLoadingAction());
+        this.spinnerService.hide();
       });
     }).catch( error => {
       console.log(error);
       this.store.dispatch(new DesactivarLoadingAction());
+      this.spinnerService.hide();
       Swal('Error al crear Usuario', error.message, 'error');
     });
   }
 
   login(email: string, password: string) {
+    this.spinnerService.show();
+    this.store.dispatch( new ActivarLoadingAction());
     this.afAuth.auth.signInWithEmailAndPassword(email, password )
     .then( response => {
       console.log(response);
       this.router.navigate(['/']);
+      this.store.dispatch(new DesactivarLoadingAction());
+      this.spinnerService.hide();
     })
     .catch( error => {
       console.log(error);
+      this.store.dispatch(new DesactivarLoadingAction());
+      this.spinnerService.hide();
       Swal('Error en el login', error.message, 'error');
     });
   }
@@ -63,8 +85,10 @@ export class AuthService {
   logOut() {
     this.afAuth.auth.signOut()
       .then( () => {
+        this.store.dispatch(new DesactivarLoadingAction());
         this.router.navigate(['/login']);
       }).catch( error => {
+        this.store.dispatch(new DesactivarLoadingAction());
         Swal('Error al cerrar sesion', error.message, 'error');
       });
   }
